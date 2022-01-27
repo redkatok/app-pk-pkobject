@@ -1,7 +1,9 @@
 package app.core.service;
 
 import app.core.domain.entity.Animal;
+import app.core.domain.entity.Zoo;
 import app.core.domain.repository.AnimalRepository;
+import app.core.domain.repository.ZooRepository;
 import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ class AnimalServiceTest {
     @Autowired
     private AnimalRepository animalRepository;
 
+    @Autowired
+    private ZooRepository zooRepository;
+
     @Test
     @Sql(statements = "CREATE SEQUENCE IF NOT EXISTS ANIMAL_SEQUENCE")
     void saveAnimals() {
@@ -48,5 +53,14 @@ class AnimalServiceTest {
         animalService.saveAnimals(animals);
 
         ListAssert<Animal> notEmpty = assertThat(animalRepository.findAll()).isNotEmpty();
+    }
+
+    @Test
+    void saveZooWIthAnimal() {
+        Zoo zoo = new Zoo("Test Zoo");
+        Animal animal = new Animal("Croc");
+        zoo.setAnimals(List.of(animal));
+        zooRepository.save(zoo);
+        String s = "s";
     }
 }

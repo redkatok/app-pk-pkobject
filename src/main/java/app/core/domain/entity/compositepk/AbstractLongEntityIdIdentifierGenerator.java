@@ -1,8 +1,5 @@
-package app.core.domain.generator;
+package app.core.domain.entity.compositepk;
 
-import app.core.domain.entity.AnimalId;
-import io.github.wimdeblauwe.jpearl.Entity;
-import io.github.wimdeblauwe.jpearl.EntityId;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.Session;
@@ -18,20 +15,25 @@ import org.hibernate.type.Type;
 import java.io.Serializable;
 import java.util.Properties;
 
-public class AnimalIdIdentifierGenerator implements IdentifierGenerator {
+public abstract class AbstractLongEntityIdIdentifierGenerator<T extends EntityId> implements IdentifierGenerator {
 
     private String sequenceCallSyntax;
 
     @Override
     public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
         JdbcEnvironment jdbcEnvironment = serviceRegistry.getService(JdbcEnvironment.class);
+
         Dialect dialect = jdbcEnvironment.getDialect();
+
         final String sequencePerEntitySuffix = ConfigurationHelper.getString(SequenceStyleGenerator.CONFIG_SEQUENCE_PER_ENTITY_SUFFIX,
             params, SequenceStyleGenerator.DEF_SEQUENCE_SUFFIX);
+
         boolean preferSequencePerEntity = ConfigurationHelper.getBoolean(SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, params
             , false);
+
         final String defaultSequenceName = preferSequencePerEntity ? params.getProperty(JPA_ENTITY_NAME) + sequencePerEntitySuffix :
             SequenceStyleGenerator.DEF_SEQUENCE_NAME;
+
         sequenceCallSyntax = dialect.getSequenceNextValString(ConfigurationHelper.getString(SequenceStyleGenerator.SEQUENCE_PARAM, params
             , defaultSequenceName));
     }
@@ -41,11 +43,16 @@ public class AnimalIdIdentifierGenerator implements IdentifierGenerator {
         if (obj instanceof Entity) {
             Entity entity = (Entity) obj;
             EntityId id = entity.getId();
+
             if (id != null) {
                 return id;
             }
         }
+
         long seqValue = ((Number) ((Session) session).createNativeQuery(sequenceCallSyntax).uniqueResult()).longValue();
-        return new AnimalId(seqValue);
+
+        return createEntityId(seqValue);
     }
+
+    protected abstract T createEntityId(long seqValue);
 }

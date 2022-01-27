@@ -1,6 +1,6 @@
 package app.core.domain.entity;
 
-import io.github.wimdeblauwe.jpearl.AbstractEntity;
+import app.core.domain.entity.compositepk.AnimalId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +10,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
@@ -19,12 +20,13 @@ import javax.persistence.Table;
 @Table(name = "animal")
 @NoArgsConstructor
 @AllArgsConstructor
-@javax.persistence.Entity
-public class Animal extends AbstractEntity<AnimalId> {
+@Entity
+public class Animal {
 
+    @EmbeddedId
     @GenericGenerator(
         name = "assigned-sequence",
-        strategy = "app.core.domain.generator.AnimalIdIdentifierGenerator",
+        strategy = "app.core.domain.entity.compositepk.AnimalIdentifierGenerator",
         parameters = {@Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY,
             value = "true"),
             @Parameter(name = SequenceStyleGenerator.CONFIG_SEQUENCE_PER_ENTITY_SUFFIX,
@@ -32,7 +34,6 @@ public class Animal extends AbstractEntity<AnimalId> {
     @GeneratedValue(
         generator = "assigned-sequence",
         strategy = GenerationType.SEQUENCE)
-    @EmbeddedId
     public AnimalId id;
 
     private String name;
